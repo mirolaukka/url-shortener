@@ -1,4 +1,5 @@
 import os
+import validators
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
@@ -30,7 +31,12 @@ app = Flask(__name__)
 def index():
     if request.method == "POST":
         original_url = request.form.get("original_url")
-        shortened_url = shorten_url(original_url)
+        
+        if validators.url(original_url):
+            shortened_url = request.url + shorten_url(original_url)
+        else:
+            shortened_url = "Not a valid url!"
+        
         return render_template("index.html", shortened_url=shortened_url)
     return render_template("index.html")
 
@@ -40,7 +46,7 @@ def redirect_to_original(short_url):
     if original_url:
         return redirect(original_url['original_url'])
     else:
-        return render_template('404.html'), 404
+        return "not found", 404
 
 def shorten_url(original_url: str) -> str:
     """
